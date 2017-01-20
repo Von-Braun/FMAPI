@@ -7,6 +7,12 @@ This program allows data to be transfered from one computer to another via:
 
 One computer listens while the other transmits data.
 
+# File Descriptions
+
+* example.py = an example of importing and using the library.
+
+* FMAPI_lib.py = contains all the functons.
+
 # Example Output
 
 * listening
@@ -68,3 +74,15 @@ There are currently two main functions: write_data_digital and read_data_digital
 * visual = format of outputing data. [0]print binary, [1]print graph, [2]print frequency, [3]print text
 
 * input_index = selects mic(1) or windows(0)
+
+**Other Functions**
+
+* convert_text_to_binary = convert a string to a list of 1s and 0s.
+
+* convert_binary_to_text =  convert a list of 1s and 0s to a string.
+
+* Pitch = used in determining frequency
+
+* signal_handler = handle a control C event
+
+
