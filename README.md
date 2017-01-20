@@ -79,7 +79,7 @@ There are currently two main functions: write_data_digital and read_data_digital
 
 * convert_text_to_binary = convert a string to a list of 1s and 0s.
 
-* convert_binary_to_text =  convert a list of 1s and 0s to a string.
+* convert_binary_to_text =  convert a string of 1s and 0s to a string of characters.
 
 * Pitch = used in determining frequency
 
