@@ -1,0 +1,2 @@
+This is used by a seperate graph program. For all intents and purposes, ignore it.
+P.S. the program will crash without it. A simple try, except would probably fix it.
