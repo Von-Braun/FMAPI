@@ -5,30 +5,13 @@ import numpy as np
 start_byte='01111111110110'
 end_byte='01111111110010'
 pad='00000000000000'
-start_byte_pad=(start_byte+pad)*15
-end_byte_pad=(end_byte+pad)*15
+start_byte_pad=(start_byte+pad)*3
+end_byte_pad=(end_byte+pad)*3
 
-
-# Load the DLL manually to ensure its handler gets
-# set before our handler.
-#basepath = imp.find_module('numpy')[1]
-#ctypes.CDLL(os.path.join(basepath, 'core', 'libmmd.dll'))
-#ctypes.CDLL(os.path.join(basepath, 'core', 'libifcoremd.dll'))
-
-# Now set our handler for CTRL_C_EVENT. Other control event 
-# types will chain to the next handler.
-'''
-def handler(dwCtrlType, hook_sigint=thread.interrupt_main):
-    if dwCtrlType == 0: # CTRL_C_EVENT
-        hook_sigint()
-        return 1 # don't chain to the next handler
-    return 0 # chain to the next handler
-'''
 def signal_handler(signum, frame):
     print 'Connection Forcefully Terminated By Host!'
     sys.exit()
 
-#win32api.SetConsoleCtrlHandler(handler, 1)
 signal.signal(signal.SIGINT, signal_handler)
 
 def Pitch(signal,RATE):
@@ -52,20 +35,15 @@ def convert_text_to_binary(text):
     for charecter in text:
         try:
             return_text=return_text+Alphabet2code[charecter]
-            #print Alphabet2code[charecter], charecter
         except:
             pass
     return_text = list(pad+start_byte_pad+return_text+end_byte_pad+pad)
-    #print return_text
     for digit in range(0,len(return_text)):
         return_text[digit]=int(return_text[digit])
-    #print return_text
     return return_text
 
 def convert_binary_to_text(text):
-    #text = '01010010101001010000001010101001010'
     text=text.replace('\n','')
-    #print text
     code2Alphabet ={"0000000":"A" ,"0000001":"B","0000010":"C","0000011":"D","0000100":"E","0000101":"F","0000110":"G","0000111":"H","0001000":"I",
     "0001001":"J","0001010":"K","0001011":"L","0001100":"M","0001101":"N","0001110":"O","0001111":"P","0010000":"Q","0010001":"R","0010010":"S",
     "0010011":"T","0010100":"U","0010101":"V","0010110":"W","0010111":"X","0011000":"Y","0011001":"Z","0011010":"a","0011011":"b","0011100":"c",
@@ -75,12 +53,6 @@ def convert_binary_to_text(text):
     "0111011":"7","0111100":"8","0111101":"9","0111110":"+","0111111":"/"}
     return_text= ''
     for i in range(0,len(text),7):
-        #print text[i:i+7],
-        #try:
-        #    print code2Alphabet[text[i:i+7]]
-        #except:
-        #    print '~'
-
         try:
             return_text=return_text+code2Alphabet[text[i:i+7]]
         except:
@@ -220,7 +192,6 @@ def read_data_digital(source_file, chunk, zero_max_freq, zero_min_freq, one_max_
         data = wf.readframes(chunk)
 
     stream = p.open(format = p.get_format_from_width(swidth),channels = CHANNEL_COUNT,rate = RATE,output = True)
-    #window = np.blackman(chunk) # use a Blackman window
     filtered_binary_start=-1
     filtered_binary_end=-1
     filtered_binary_locations_blacklist=[]
@@ -229,9 +200,6 @@ def read_data_digital(source_file, chunk, zero_max_freq, zero_min_freq, one_max_
     while len(data) == chunk*swidth:
         if revieve_message_printed: byte_count+=1
         if write_stream: stream.write(data) # write data out to the audio stream
-        #indata = np.array(wave.struct.unpack("%dh"%(len(data)/swidth),data))*window # unpack the data and times by the hamming window
-        
-            # find the frequency and output it
         thefreq=Pitch(data,RATE)
         freq_percentage = int(round((thefreq/10000)*40))
         if freq_percentage<0: freq_percentage=0
@@ -254,12 +222,9 @@ def read_data_digital(source_file, chunk, zero_max_freq, zero_min_freq, one_max_
             binary_data=binary_data+'1'
         else:
             if visual==0: print '~',binary_data[-1:]
-            #binary_data=binary_data+binary_data[-1:]
-
         if len(binary_data)>max_buffer_size and filtered_binary_start==-1: #if buffer size exceeded, and we are not gathering data,erase binary text
             binary_data = binary_data[-len(start_byte):]
-            #print 'buffer purged'
-         
+            
         if source_file=='':
             try:
                 data = input_stream.read(chunk)
@@ -284,7 +249,6 @@ def read_data_digital(source_file, chunk, zero_max_freq, zero_min_freq, one_max_
                 filtered_binary_locations_blacklist.append(len(binary_data)-len(end_byte))
 
         if filtered_binary_end!=-1:
-            #print filtered_binary_locations
             revieve_message_printed=False
             raw_data = '0'+binary_data[filtered_binary_start+len(start_byte)+1:filtered_binary_end]
             print '\n'+('='*90)
@@ -304,21 +268,11 @@ def read_data_digital(source_file, chunk, zero_max_freq, zero_min_freq, one_max_
     p.terminate()
     print binary_data
 
-
 if len(sys.argv)>=2:
     if sys.argv[1]=='w':
         data = convert_text_to_binary('On December 10, 2016, about 1215 eastern standard time, a privately owned and operated experimental amateur-built Lightning, N59JL, was substantially damaged when it impacted terrain while maneuvering in the traffic pattern at Franklin Municipal-John Beverly Rose Airport, Franklin, Virginia. The commercial pilot sustained minor injuries and the passenger sustained a serious injury. The airplane was operated under the provisions of 14 Code of Federal Regulations Part 91 as a personal, local flight. Visual meteorological conditions prevailed at the time and no flight plan was filed for the flight which was originating at the time of the accident.'.replace(' ','~'))
-
         write_data_digital(data,1000,60,500,'')
-    
     elif sys.argv[1]=='r':
-    
         raw_binary=read_data_digital('', 166, 8000, 4000, 3999, 1000,False,2,0)
-    
         print convert_binary_to_text(raw_binary)
-
-
-
-
-
 #no analog, output check before processing write
